@@ -757,7 +757,7 @@
     <div id="horizonLand"></div>
     <div id="horizonLandSmall"></div>
     <div id="waterLine"></div>
-    <div id="titleGroup"><div class="title">도구리 낚시</div><div class="version">버전 0.215</div></div>
+    <div id="titleGroup"><div class="title">도구리 낚시</div><div class="version">버전 0.216</div></div>
     <div id="recordPanel" aria-label="잡은 물고기 최고 기록">
       <div class="recordHeader">
         <div class="recordLabel">최고 기록</div>
@@ -1293,7 +1293,7 @@
   }
 
   function getJumpDurationMs() {
-    return Math.round(500 - currentFishDifficulty * 220);
+    return Math.round(1000 - currentFishDifficulty * 500);
   }
 
   function getNextJumpDelay() {
