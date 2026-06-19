@@ -294,6 +294,10 @@
     filter: drop-shadow(0 5px 4px rgba(36, 54, 62, .18));
   }
 
+  #fish.no-fade {
+    transition: none;
+  }
+
   #fish::before,
   #fish::after,
   #fishEye {
@@ -781,7 +785,7 @@
     <div id="horizonLand"></div>
     <div id="horizonLandSmall"></div>
     <div id="waterLine"></div>
-    <div id="titleGroup"><div class="title">도구리 낚시</div><div class="version">버전 0.219</div></div>
+    <div id="titleGroup"><div class="title">도구리 낚시</div><div class="version">버전 0.22</div></div>
     <div id="recordPanel" aria-label="잡은 물고기 최고 기록">
       <div class="recordHeader">
         <div class="recordLabel">최고 기록</div>
@@ -882,6 +886,7 @@
 
   let bobberX = 680;
   let bobberY = 252;
+  const INITIAL_BOBBER_RIGHT_OFFSET = 24;
   let bobberDir = 0;
   let bobberSpeed = 0;
   let bobberMoveStartAt = 0;
@@ -1056,6 +1061,15 @@
     }
   }
 
+  function hideFishImmediately() {
+    fish.classList.add("no-fade");
+    fish.style.opacity = 0;
+    void fish.offsetWidth;
+    requestAnimationFrame(() => {
+      fish.classList.remove("no-fade");
+    });
+  }
+
   function easeOutSine(t) {
     return Math.sin((t * Math.PI) / 2);
   }
@@ -1164,6 +1178,8 @@
       anchorX = Math.min(game.clientWidth - 90, Math.max(360, doguriLeft + doguriWidth + 300));
     }
 
+    anchorX += INITIAL_BOBBER_RIGHT_OFFSET;
+
     const { minX, maxX } = getReelBounds();
     anchorX = Math.max(minX, Math.min(maxX, anchorX));
 
@@ -1187,7 +1203,7 @@
     fish.classList.remove("jump", "caught-fly", "caught-idle", "boot-catch");
     useFishSprite(currentFish);
     bobberRippleCooldown = 0;
-    fish.style.opacity = 0;
+    hideFishImmediately();
     fish.style.transform = "";
     fish.style.translate = "";
     fish.style.zIndex = "";
