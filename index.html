@@ -1120,7 +1120,16 @@
     const doguriWidth = doguriRect.width;
     const doguriHeight = doguriRect.height;
 
-    const anchorX = Math.min(game.clientWidth - 90, Math.max(360, doguriLeft + doguriWidth + 300));
+    let anchorX;
+    if (isNarrowPortrait()) {
+      anchorX = Math.min(game.clientWidth - 42, Math.max(game.clientWidth * .68, doguriLeft + doguriWidth + 20));
+    } else {
+      anchorX = Math.min(game.clientWidth - 90, Math.max(360, doguriLeft + doguriWidth + 300));
+    }
+
+    const { minX, maxX } = getReelBounds();
+    anchorX = Math.max(minX, Math.min(maxX, anchorX));
+
     const anchorY = doguriTop + doguriHeight * 0.76 - 16;
 
     return { x: anchorX, y: anchorY };
@@ -1224,12 +1233,51 @@
     showPopup("놓쳤다!", "물고기가 도망갔습니다.");
   }
 
+  function isNarrowPortrait() {
+    return game.clientWidth <= 640 && game.clientHeight > game.clientWidth;
+  }
+
+  function getReelSpeedScale() {
+    // 화면 폭이 좁을수록 찌 이동 속도와 가속도를 낮춥니다.
+    // 특히 모바일 세로모드에서는 같은 px/s라도 체감 속도가 빨라지기 때문에 한 번 더 보정합니다.
+    const widthScale = Math.max(.45, Math.min(1, game.clientWidth / 960));
+    const portraitScale = isNarrowPortrait() ? .78 : 1;
+    return widthScale * portraitScale;
+  }
+
+  function getReelBounds() {
+    const width = game.clientWidth;
+
+    let minX;
+    let maxX;
+
+    if (isNarrowPortrait()) {
+      // 기존 desktop 기준 최소값 330px은 모바일 폭에서 maxX보다 커질 수 있어
+      // 세로모드에서는 화면 폭 비율 기준으로 안전한 이동 범위를 사용합니다.
+      minX = Math.max(72, width * .42);
+      maxX = Math.min(width - 42, width * .88);
+    } else {
+      minX = Math.max(330, width * .36);
+      maxX = Math.min(width - 90, width * .88);
+    }
+
+    // 아주 좁은 화면에서도 min/max가 뒤집히지 않도록 최소 이동 폭을 보장합니다.
+    if (maxX - minX < 90) {
+      const center = Math.min(width - 42, Math.max(72, width * .68));
+      const halfRange = Math.min(90, Math.max(45, width * .2));
+      minX = Math.max(42, center - halfRange);
+      maxX = Math.min(width - 42, center + halfRange);
+    }
+
+    return { minX, maxX };
+  }
+
   function getReelMaxSpeed() {
-    return 150 + currentFishDifficulty * 120;
+    return (150 + currentFishDifficulty * 120) * getReelSpeedScale();
   }
 
   function getReelAcceleration() {
-    return 420 + currentFishDifficulty * 360;
+    return (420 + currentFishDifficulty * 360) * getReelSpeedScale();
   }
 
   function getDirectionChangeDelay() {
@@ -1566,8 +1614,7 @@
     const dt = Math.min(40, now - lastFrameAt) / 1000;
     lastFrameAt = now;
 
-    const minX = Math.max(330, game.clientWidth * .36);
-    const maxX = Math.min(game.clientWidth - 90, game.clientWidth * .88);
+    const { minX, maxX } = getReelBounds();
     const prevX = bobberX;
     let nextX = bobberX;
 
