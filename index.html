@@ -171,6 +171,7 @@
     left: 78px;
     top: calc(50% - 89px);
     width: 285px;
+    aspect-ratio: 1 / 1;
     z-index: 5;
     image-rendering: auto;
     translate: 0 0;
@@ -635,6 +636,8 @@
     font-weight: 900;
     cursor: pointer;
     box-shadow: 0 7px 0 #b44b63;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
     transition: transform .08s ease, box-shadow .08s ease, background .15s ease;
   }
 
@@ -757,7 +760,7 @@
     <div id="horizonLand"></div>
     <div id="horizonLandSmall"></div>
     <div id="waterLine"></div>
-    <div id="titleGroup"><div class="title">도구리 낚시</div><div class="version">버전 0.217</div></div>
+    <div id="titleGroup"><div class="title">도구리 낚시</div><div class="version">버전 0.218</div></div>
     <div id="recordPanel" aria-label="잡은 물고기 최고 기록">
       <div class="recordHeader">
         <div class="recordLabel">최고 기록</div>
@@ -1133,6 +1136,13 @@
     const anchorY = doguriTop + doguriHeight * 0.76 - 16;
 
     return { x: anchorX, y: anchorY };
+  }
+
+  function syncBobberAnchorIfIdle() {
+    if (![State.READY, State.WAIT_BITE, State.BITE].includes(state)) return;
+
+    const anchor = getBobberAnchorFromDoguri();
+    setBobberPosition(anchor.x, anchor.y);
   }
 
   function resetVisuals() {
@@ -1721,9 +1731,29 @@
     }
   }
 
-  startButton.addEventListener("click", (e) => {
+  let mainButtonLockedUntil = 0;
+
+  function handleMainButtonInput(e) {
     e.preventDefault();
+    e.stopPropagation();
+
+    const now = performance.now();
+    if (now < mainButtonLockedUntil) return;
+
+    mainButtonLockedUntil = now + 360;
     handleSpace();
+  }
+
+  startButton.addEventListener("pointerdown", handleMainButtonInput);
+  startButton.addEventListener("click", (e) => {
+    // pointerdown으로 이미 처리된 모바일/마우스 입력의 뒤늦은 click 중복 실행을 막는다.
+    if (performance.now() < mainButtonLockedUntil) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+
+    handleMainButtonInput(e);
   });
 
   function bindDirectionButton(button, keyName) {
@@ -1798,7 +1828,15 @@
   });
 
   window.addEventListener("resize", () => {
-    if (state === State.READY) resetVisuals();
+    syncBobberAnchorIfIdle();
+  });
+
+  doguri.addEventListener("load", () => {
+    requestAnimationFrame(syncBobberAnchorIfIdle);
+  });
+
+  window.addEventListener("load", () => {
+    requestAnimationFrame(syncBobberAnchorIfIdle);
   });
 
   function makeBubbles() {
@@ -1806,6 +1844,7 @@
 
   updateBestRecordText();
   toReady();
+  requestAnimationFrame(syncBobberAnchorIfIdle);
 })();
 </script>
 </body>
