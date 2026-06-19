@@ -2,12 +2,21 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 <title>도구리 낚시</title>
 <style>
   * {
     box-sizing: border-box;
     user-select: none;
+    -webkit-user-select: none;
+  }
+
+  html {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    touch-action: none;
+    overscroll-behavior: none;
   }
 
   body {
@@ -20,6 +29,9 @@
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     color: #3b2630;
     overflow: hidden;
+    touch-action: none;
+    overscroll-behavior: none;
+    -webkit-touch-callout: none;
   }
 
   #game {
@@ -28,15 +40,62 @@
     position: relative;
     overflow: hidden;
     border-radius: 24px;
-    background:
-      radial-gradient(ellipse at 17% 29%, #fff 0 5%, transparent 5.4%),
-      radial-gradient(ellipse at 23% 27%, #fff 0 6%, transparent 6.4%),
-      radial-gradient(ellipse at 29% 29%, #fff 0 5.2%, transparent 5.6%),
-      radial-gradient(ellipse at 70% 35%, #fff 0 4.6%, transparent 5%),
-      radial-gradient(ellipse at 76% 33%, #fff 0 5.6%, transparent 6%),
-      radial-gradient(ellipse at 83% 35%, #fff 0 4.8%, transparent 5.2%),
-      linear-gradient(180deg, #93d8f2 0%, #c2e8f2 100%);
+    background: linear-gradient(180deg, #93d8f2 0%, #c2e8f2 100%);
     box-shadow: 0 18px 50px rgba(20, 73, 92, .28);
+    touch-action: none;
+  }
+
+  #cloudLayer {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .cloud {
+    position: absolute;
+    width: 188px;
+    height: 74px;
+    background: #fff;
+    border-radius: 999px;
+    filter: drop-shadow(0 2px 0 rgba(255,255,255,.18));
+  }
+
+  .cloud::before,
+  .cloud::after {
+    content: "";
+    position: absolute;
+    background: #fff;
+    border-radius: 50%;
+  }
+
+  .cloud::before {
+    left: 30px;
+    top: -24px;
+    width: 82px;
+    height: 82px;
+  }
+
+  .cloud::after {
+    right: 26px;
+    top: -14px;
+    width: 70px;
+    height: 70px;
+  }
+
+  .cloudA {
+    left: 282px;
+    top: 160px;
+    transform: scale(.7);
+    transform-origin: left top;
+  }
+
+  .cloudB {
+    left: 654px;
+    top: 204px;
+    transform: scale(.9);
+    transform-origin: left top;
   }
 
   #titleGroup {
@@ -72,9 +131,9 @@
   #waterLine {
     position: absolute;
     left: -5%;
+    top: calc(50% + 40px);
     bottom: 0;
     width: 110%;
-    height: 280px;
     overflow: hidden;
     background: #539fde;
     border-top: 0;
@@ -83,7 +142,7 @@
   #horizonLand {
     position: absolute;
     left: -430px;
-    bottom: 279px;
+    top: calc(50% - 55px);
     width: 520px;
     height: 96px;
     background: #29bb8e;
@@ -96,7 +155,7 @@
   #horizonLandSmall {
     position: absolute;
     left: 58%;
-    bottom: 279px;
+    top: calc(50% + 11px);
     width: 148px;
     height: 30px;
     background: #29bb8e;
@@ -110,7 +169,7 @@
   #doguri {
     position: absolute;
     left: 78px;
-    bottom: 124px;
+    top: calc(50% - 89px);
     width: 285px;
     z-index: 5;
     image-rendering: auto;
@@ -550,9 +609,9 @@
   #guide {
     position: absolute;
     left: 50%;
-    bottom: 35px;
+    top: calc(50% + 285px);
     width: min(720px, calc(100% - 40px));
-    transform: translateX(-50%);
+    transform: translate(-50%, -100%);
     z-index: 30;
     padding: 16px 18px;
     border-radius: 22px;
@@ -625,6 +684,43 @@
     line-height: 1.45;
   }
 
+
+
+  #touchControls {
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    pointer-events: auto;
+  }
+
+  .touchButton {
+    min-width: 82px;
+    padding: 13px 28px;
+    border: 0;
+    border-radius: 999px;
+    background: #ff7f9c;
+    color: white;
+    font-size: 22px;
+    font-weight: 900;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 7px 0 #b44b63;
+    touch-action: none;
+    transition: transform .08s ease, box-shadow .08s ease, background .15s ease;
+  }
+
+  .touchButton:hover {
+    background: #ff6d90;
+  }
+
+  .touchButton:active,
+  .touchButton.active {
+    transform: translateY(5px);
+    box-shadow: 0 2px 0 #b44b63;
+    background: #ff6d90;
+  }
+
   .hidden {
     display: none !important;
   }
@@ -642,7 +738,7 @@
 
     #doguri {
       left: 24px;
-      bottom: 150px;
+      top: calc(50% - 60px);
       width: 230px;
     }
 
@@ -654,6 +750,10 @@
 </head>
 <body>
   <main id="game" aria-label="도구리 낚시 게임">
+    <div id="cloudLayer" aria-hidden="true">
+      <div class="cloud cloudA"></div>
+      <div class="cloud cloudB"></div>
+    </div>
     <div id="horizonLand"></div>
     <div id="horizonLandSmall"></div>
     <div id="waterLine"></div>
@@ -688,6 +788,10 @@
     <section id="guide">
       <div id="guideText">낚시하기 버튼 또는 스페이스바로 시작하세요.</div>
       <button id="startButton" type="button">낚시하기</button>
+      <div id="touchControls" class="hidden" aria-label="화면 방향키">
+        <button id="touchLeftButton" class="touchButton" type="button" aria-label="왼쪽 방향키">←</button>
+        <button id="touchRightButton" class="touchButton" type="button" aria-label="오른쪽 방향키">→</button>
+      </div>
     </section>
 
     <section id="toast" role="dialog" aria-live="polite">
@@ -712,6 +816,27 @@
   const toastBody = document.getElementById("toastBody");
   const bestRecordText = document.getElementById("bestRecordText");
   const resetRecordButton = document.getElementById("resetRecordButton");
+  const touchControls = document.getElementById("touchControls");
+  const touchLeftButton = document.getElementById("touchLeftButton");
+  const touchRightButton = document.getElementById("touchRightButton");
+
+  const preventMobileZoom = (e) => {
+    if (e.touches && e.touches.length > 1) {
+      e.preventDefault();
+    }
+  };
+  let lastTouchEndAt = 0;
+  document.addEventListener("touchmove", preventMobileZoom, { passive: false });
+  document.addEventListener("touchend", (e) => {
+    const now = performance.now();
+    if (now - lastTouchEndAt < 350) {
+      e.preventDefault();
+    }
+    lastTouchEndAt = now;
+  }, { passive: false });
+  ["gesturestart", "gesturechange", "gestureend"].forEach((eventName) => {
+    document.addEventListener(eventName, (e) => e.preventDefault(), { passive: false });
+  });
 
   const State = {
     READY: "READY",
@@ -942,9 +1067,24 @@
     stateText.textContent = text;
   }
 
-  function setGuide(text, showButton = false) {
+  function updateTouchControls() {
+    const showDirectionButtons = state === State.REEL;
+    touchControls.classList.toggle("hidden", !showDirectionButtons);
+    touchLeftButton.classList.toggle("active", keys.ArrowLeft);
+    touchRightButton.classList.toggle("active", keys.ArrowRight);
+  }
+
+  function releaseDirections() {
+    keys.ArrowLeft = false;
+    keys.ArrowRight = false;
+    updateTouchControls();
+  }
+
+  function setGuide(text, showButton = false, buttonText = "낚시하기") {
     guideText.textContent = text;
+    startButton.textContent = buttonText;
     startButton.classList.toggle("hidden", !showButton);
+    updateTouchControls();
   }
 
   function updateFailText() {
@@ -1013,7 +1153,7 @@
     resetVisuals();
     hidePopup();
     setStateText("준비");
-    setGuide("낚시하기 버튼 또는 스페이스바로 시작하세요.", true);
+    setGuide("낚시하기 버튼 또는 스페이스바로 시작하세요.", true, "낚시하기");
     scheduleIdleBobberRipple(500);
   }
 
@@ -1025,7 +1165,7 @@
     updateFailText();
     resetVisuals();
     setStateText("기다리는 중");
-    setGuide("입질이 오면 1초 안에 스페이스바를 누르세요. 낚기 기회 3/3", false);
+    setGuide("입질이 오면 1초 안에 낚기 버튼 또는 스페이스바를 누르세요. 낚기 기회 3/3", false);
     scheduleBite();
     scheduleIdleBobberRipple(500);
   }
@@ -1041,7 +1181,7 @@
     state = State.BITE;
     biteStartedAt = performance.now();
     setStateText("입질!");
-    setGuide("지금! 스페이스바!", false);
+    setGuide("지금! 낚기 버튼 또는 스페이스바!", true, "낚기!");
 
     bobber.classList.remove("bite");
     void bobber.offsetWidth;
@@ -1070,7 +1210,7 @@
     state = State.WAIT_BITE;
     setStateText("기다리는 중");
     const chancesLeft = Math.max(0, 3 - failCount);
-    setGuide(reason ? `${reason} 낚기 기회 ${chancesLeft}/3` : `입질이 오면 1초 안에 스페이스바를 누르세요. 낚기 기회 ${chancesLeft}/3`, false);
+    setGuide(reason ? `${reason} 낚기 기회 ${chancesLeft}/3` : `입질이 오면 1초 안에 낚기 버튼 또는 스페이스바를 누르세요. 낚기 기회 ${chancesLeft}/3`, false);
     scheduleIdleBobberRipple(500);
   }
 
@@ -1079,7 +1219,8 @@
     state = State.MISSED;
     doguri.classList.remove("reeling");
     setStateText("놓쳤다!");
-    setGuide("스페이스바를 누르면 준비 단계로 돌아갑니다.", false);
+    releaseDirections();
+    setGuide("다시 준비 버튼 또는 스페이스바를 누르면 준비 단계로 돌아갑니다.", true, "다시 준비");
     showPopup("놓쳤다!", "물고기가 도망갔습니다.");
   }
 
@@ -1119,7 +1260,7 @@
     pickRandomFish();
     useFishSprite(currentFish);
     setStateText("낚기");
-    setGuide("찌가 움직이는 반대 방향키를 계속 유지하세요. 물고기가 점프하면 스페이스바!", false);
+    setGuide("찌가 움직이는 반대 방향 버튼을 계속 누르세요. 물고기가 점프하면 잡기 버튼!", false);
 
     bobberDir = Math.random() < .5 ? -1 : 1;
     bobberSpeed = 0;
@@ -1145,7 +1286,8 @@
     state = State.BROKEN;
     doguri.classList.remove("reeling");
     setStateText("줄이 끊어졌다!");
-    setGuide("스페이스바를 누르면 준비 단계로 돌아갑니다.", false);
+    releaseDirections();
+    setGuide("다시 준비 버튼 또는 스페이스바를 누르면 준비 단계로 돌아갑니다.", true, "다시 준비");
     showPopup("줄이 끊어졌다!", "반대 방향키 입력이 늦었습니다.");
   }
 
@@ -1158,7 +1300,8 @@
 
     const jumpDuration = getJumpDurationMs();
     const splashDirection = bobberDir === 0 ? 1 : bobberDir;
-    setGuide(`${(jumpDuration / 1000).toFixed(2)}초 안에 스페이스바를 누르면 잡기 성공!`, false);
+    releaseDirections();
+    setGuide(`${(jumpDuration / 1000).toFixed(2)}초 안에 잡기 버튼 또는 스페이스바를 누르면 성공!`, true, "잡기!");
 
     cancelCaughtFishFly();
     cancelCaughtFishIdle();
@@ -1274,7 +1417,8 @@
     useFishSprite(currentFish);
     flyCaughtFishToDoguri();
     setStateText("잡기 성공!");
-    setGuide("스페이스바를 누르면 준비 단계로 돌아갑니다.", false);
+    releaseDirections();
+    setGuide("다시 준비 버튼 또는 스페이스바를 누르면 준비 단계로 돌아갑니다.", true, "다시 준비");
     popupSpaceLockedUntil = performance.now() + 1300;
 
     const size = currentFishSize || rollFishSize(currentFish);
@@ -1307,7 +1451,8 @@
     createJumpSplash(bobberDir === 0 ? 1 : bobberDir);
     flyCaughtFishToDoguri();
     setStateText("장화 잡기");
-    setGuide("스페이스바를 누르면 준비 단계로 돌아갑니다.", false);
+    releaseDirections();
+    setGuide("다시 준비 버튼 또는 스페이스바를 누르면 준비 단계로 돌아갑니다.", true, "다시 준비");
     popupSpaceLockedUntil = performance.now() + 1300;
 
     setTimer(() => {
@@ -1529,9 +1674,37 @@
     }
   }
 
-  startButton.addEventListener("click", () => {
-    if (state === State.READY) startFishing();
+  startButton.addEventListener("click", (e) => {
+    e.preventDefault();
+    handleSpace();
   });
+
+  function bindDirectionButton(button, keyName) {
+    const press = (e) => {
+      e.preventDefault();
+      keys[keyName] = true;
+      button.setPointerCapture?.(e.pointerId);
+      updateTouchControls();
+    };
+
+    const release = (e) => {
+      e.preventDefault();
+      keys[keyName] = false;
+      updateTouchControls();
+    };
+
+    button.addEventListener("pointerdown", press);
+    button.addEventListener("pointerup", release);
+    button.addEventListener("pointercancel", release);
+    button.addEventListener("lostpointercapture", () => {
+      keys[keyName] = false;
+      updateTouchControls();
+    });
+    button.addEventListener("contextmenu", (e) => e.preventDefault());
+  }
+
+  bindDirectionButton(touchLeftButton, "ArrowLeft");
+  bindDirectionButton(touchRightButton, "ArrowRight");
 
   resetRecordButton.addEventListener("click", (e) => {
     e.stopPropagation();
@@ -1549,11 +1722,13 @@
     if (e.code === "ArrowLeft") {
       e.preventDefault();
       keys.ArrowLeft = true;
+      updateTouchControls();
     }
 
     if (e.code === "ArrowRight") {
       e.preventDefault();
       keys.ArrowRight = true;
+      updateTouchControls();
     }
   });
 
@@ -1561,17 +1736,18 @@
     if (e.code === "ArrowLeft") {
       e.preventDefault();
       keys.ArrowLeft = false;
+      updateTouchControls();
     }
 
     if (e.code === "ArrowRight") {
       e.preventDefault();
       keys.ArrowRight = false;
+      updateTouchControls();
     }
   });
 
   window.addEventListener("blur", () => {
-    keys.ArrowLeft = false;
-    keys.ArrowRight = false;
+    releaseDirections();
   });
 
   window.addEventListener("resize", () => {
