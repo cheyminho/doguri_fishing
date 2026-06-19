@@ -757,7 +757,7 @@
     <div id="horizonLand"></div>
     <div id="horizonLandSmall"></div>
     <div id="waterLine"></div>
-    <div id="titleGroup"><div class="title">도구리 낚시</div><div class="version">버전 0.216</div></div>
+    <div id="titleGroup"><div class="title">도구리 낚시</div><div class="version">버전 0.217</div></div>
     <div id="recordPanel" aria-label="잡은 물고기 최고 기록">
       <div class="recordHeader">
         <div class="recordLabel">최고 기록</div>
@@ -1174,7 +1174,7 @@
     updateFailText();
     resetVisuals();
     setStateText("기다리는 중");
-    setGuide("입질이 오면 1초 안에 낚기 버튼 또는 스페이스바를 누르세요. 낚기 기회 3/3", false);
+    setGuide("입질이 오면 1초 안에 낚기 버튼 또는 스페이스바를 누르세요. 낚기 기회 3/3", true, "낚기!");
     scheduleBite();
     scheduleIdleBobberRipple(500);
   }
@@ -1219,7 +1219,7 @@
     state = State.WAIT_BITE;
     setStateText("기다리는 중");
     const chancesLeft = Math.max(0, 3 - failCount);
-    setGuide(reason ? `${reason} 낚기 기회 ${chancesLeft}/3` : `입질이 오면 1초 안에 낚기 버튼 또는 스페이스바를 누르세요. 낚기 기회 ${chancesLeft}/3`, false);
+    setGuide(reason ? `${reason} 낚기 기회 ${chancesLeft}/3` : `입질이 오면 1초 안에 낚기 버튼 또는 스페이스바를 누르세요. 낚기 기회 ${chancesLeft}/3`, true, "낚기!");
     scheduleIdleBobberRipple(500);
   }
 
