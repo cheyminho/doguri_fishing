@@ -218,9 +218,9 @@
 
   #doguriHat {
     position: absolute;
-    left: 38px;
-    top: 4px;
-    width: 160px;
+    left: 13.3333%;
+    top: 1.4035%;
+    width: 56.1404%;
     --hat-rotate: 0deg;
     z-index: 1;
     pointer-events: none;
@@ -232,14 +232,14 @@
   }
 
   #doguriHat.pose-active {
-    left: 10px;
-    top: 1px;
+    left: 3.5088%;
+    top: .3509%;
     --hat-rotate: -10deg;
   }
 
   #doguriHat.pose-caught {
-    left: 40px;
-    top: 4px;
+    left: 14.0351%;
+    top: 1.4035%;
     --hat-rotate: 0deg;
   }
 
@@ -1328,21 +1328,6 @@
       width: 100%;
     }
 
-    #doguriHat {
-      left: -28px;
-      top: 19px;
-      width: 131px;
-    }
-
-    #doguriHat.pose-active {
-      left: -56px;
-      top: 16px;
-    }
-
-    #doguriHat.pose-caught {
-      left: -26px;
-      top: 19px;
-    }
 
     #recordArea {
       left: 14px;
@@ -1459,7 +1444,7 @@
     <div id="waterLine">
       <div id="waveLayer" aria-hidden="true"></div>
     </div>
-    <div id="titleGroup"><div class="title">도구리 낚시</div><div class="version">버전 0.395</div></div>
+    <div id="titleGroup"><div class="title">도구리 낚시</div><div class="version">버전 0.396</div></div>
     <div id="recordArea">
       <div id="recordPanel" aria-label="잡은 물고기 최고 기록">
         <div class="recordHeader">
@@ -1651,8 +1636,9 @@
   const BOOT_COLLECT_COUNT_KEY = "doguriFishingBootCollectCountV1";
   const BOOT_CATCH_CHANCE = 0.20;
   const FORCE_SHOW_REWARD_HAT = false;
-  // 도감 100%를 완료하는 물고기를 잡으면 보상 팝업이 뜹니다.
-  const REWARD_HAT_UNLOCK_PERCENT = 100;
+  const REWARD_HAT_TEST_MODE = false;
+  // 테스트 모드가 켜져 있으면 10%, 꺼져 있으면 100% 완료 시 모자 보상 팝업이 뜹니다.
+  const REWARD_HAT_UNLOCK_PERCENT = REWARD_HAT_TEST_MODE ? 10 : 100;
   const BOOT_RARE_BONUS_MAX_COUNT = 100;
   const BOOT_RARE_BONUS_MAX_MULTIPLIER = 2;
   const BOOT_RARE_BONUS_CURVE = 1.0;
