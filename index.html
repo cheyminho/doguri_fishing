@@ -136,7 +136,7 @@
     width: 110%;
     overflow: hidden;
     background: #539fde;
-    border-top: 0;
+    border-top: 5px solid #d8f6fe;
   }
 
   #waveLayer {
@@ -165,7 +165,7 @@
   #horizonLand {
     position: absolute;
     left: -430px;
-    top: calc(50% - 55px);
+    top: calc(50% - 56px);
     width: 520px;
     height: 96px;
     background: #29bb8e;
@@ -178,7 +178,7 @@
   #horizonLandSmall {
     position: absolute;
     left: 58%;
-    top: calc(50% + 11px);
+    top: calc(50% + 10px);
     width: 148px;
     height: 30px;
     background: #29bb8e;
@@ -671,11 +671,15 @@
     }
   }
 
-  #recordPanel {
+  #recordArea {
     position: absolute;
     left: 24px;
     top: 24px;
     z-index: 12;
+  }
+
+  #recordPanel {
+    position: relative;
     min-width: 118px;
     padding: 10px 12px;
     border-radius: 18px;
@@ -724,13 +728,19 @@
   }
 
   #bootCountText {
+    --boot-count-icon-size: 99px;
+    --boot-count-value-offset: -28px;
     position: absolute;
-    left: 10px;
-    top: 84px;
-    z-index: 12;
-    display: flex;
+    left: -14px;
+    top: calc(100% - 15px);
+    display: inline-flex;
     align-items: center;
+    justify-content: flex-start;
     gap: 0;
+    width: 146px;
+    height: 99px;
+    min-width: 146px;
+    min-height: 99px;
     padding: 0;
     border: 0;
     background: transparent;
@@ -740,10 +750,13 @@
     font-weight: 950;
     letter-spacing: -0.04em;
     line-height: 1;
+    text-align: left;
+    white-space: nowrap;
     text-shadow: 0 1px 0 rgba(255,255,255,.42);
     cursor: pointer;
     pointer-events: auto;
     touch-action: none;
+    transform-origin: left top;
     transition: transform .08s ease, opacity .12s ease;
   }
 
@@ -756,10 +769,10 @@
   }
 
   .bootCountIcon {
-    flex: 0 0 auto;
+    flex: 0 0 var(--boot-count-icon-size);
     display: block;
-    width: 99px;
-    height: 99px;
+    width: var(--boot-count-icon-size);
+    height: var(--boot-count-icon-size);
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
@@ -768,9 +781,10 @@
   }
 
   #bootCountValue {
-    display: inline-block;
+    flex: 0 0 auto;
+    display: block;
     min-width: 32px;
-    margin-left: -25px;
+    margin-left: var(--boot-count-value-offset);
     text-align: left;
     transform: translateY(1px);
   }
@@ -1268,26 +1282,18 @@
       width: 230px;
     }
 
-    #recordPanel {
+    #recordArea {
       left: 14px;
       top: 14px;
+    }
+
+    #recordPanel {
       min-width: 104px;
       padding: 8px 10px;
     }
 
     #bestRecordText {
       font-size: 18px;
-    }
-
-    #bootCountText {
-      left: 1px;
-      top: 66px;
-      font-size: 18px;
-    }
-
-    .bootCountIcon {
-      width: 58px;
-      height: 58px;
     }
 
     .confirmPanel {
@@ -1391,15 +1397,17 @@
     <div id="waterLine">
       <div id="waveLayer" aria-hidden="true"></div>
     </div>
-    <div id="titleGroup"><div class="title">도구리 낚시</div><div class="version">버전 0.34</div></div>
-    <div id="recordPanel" aria-label="잡은 물고기 최고 기록">
-      <div class="recordHeader">
-        <div class="recordLabel">최고 기록</div>
-        <button id="resetRecordButton" type="button" aria-label="최고 기록 초기화">초기화</button>
+    <div id="titleGroup"><div class="title">도구리 낚시</div><div class="version">버전 0.35</div></div>
+    <div id="recordArea">
+      <div id="recordPanel" aria-label="잡은 물고기 최고 기록">
+        <div class="recordHeader">
+          <div class="recordLabel">최고 기록</div>
+          <button id="resetRecordButton" type="button" aria-label="최고 기록 초기화">초기화</button>
+        </div>
+        <div id="bestRecordText">없음</div>
       </div>
-      <div id="bestRecordText">없음</div>
+      <button id="bootCountText" type="button" aria-live="polite" aria-label="장화 0개 수거"><span class="bootCountIcon" aria-hidden="true"></span><span id="bootCountValue">x0</span></button>
     </div>
-    <button id="bootCountText" type="button" aria-live="polite" aria-label="장화 0개 수거"><span class="bootCountIcon" aria-hidden="true"></span><span id="bootCountValue">x0</span></button>
 
     <div id="hud" hidden aria-hidden="true">
       <div class="panel">
@@ -3082,7 +3090,7 @@
     wave.width = randomRange(108, 156);
     wave.height = wave.width * 0.5;
     wave.scaleX = randomRange(1, 1.2);
-    wave.maxOpacity = randomRange(0.13, 0.22);
+    wave.maxOpacity = randomRange(0.23, 0.32);
     wave.minOpacity = randomRange(0.015, 0.055);
     wave.opacityPhase = randomRange(0, Math.PI * 2);
     wave.opacitySpeed = randomRange(0.22, 0.38);
@@ -3138,7 +3146,7 @@
       const el = document.createElement("div");
       el.className = "wave-mark";
       waveLayer.appendChild(el);
-      const wave = { el, x: 0, top: 0, width: 132, height: 66, speed: 15, scaleX: 1, phase: 0, maxOpacity: 0.18, minOpacity: 0.03, opacityPhase: 0, opacitySpeed: 0.28, floatAmplitudeX: 4, floatAmplitudeY: 2.5, floatSpeed: 0.7 };
+      const wave = { el, x: 0, top: 0, width: 132, height: 66, speed: 15, scaleX: 1, phase: 0, maxOpacity: 0.28, minOpacity: 0.03, opacityPhase: 0, opacitySpeed: 0.28, floatAmplitudeX: 4, floatAmplitudeY: 2.5, floatSpeed: 0.7 };
       waves.push(wave);
       const initialX = -140 + spacing * i + randomRange(-spacing * 0.15, spacing * 0.15);
       resetWave(wave, false, initialX);
