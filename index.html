@@ -1397,7 +1397,7 @@
     <div id="waterLine">
       <div id="waveLayer" aria-hidden="true"></div>
     </div>
-    <div id="titleGroup"><div class="title">도구리 낚시</div><div class="version">버전 0.37</div></div>
+    <div id="titleGroup"><div class="title">도구리 낚시</div><div class="version">버전 0.38</div></div>
     <div id="recordArea">
       <div id="recordPanel" aria-label="잡은 물고기 최고 기록">
         <div class="recordHeader">
@@ -1729,7 +1729,7 @@
   }
 
   function formatChancePercent(value) {
-    return String(Math.round(value));
+    return (Math.round(value * 10) / 10).toFixed(1);
   }
 
   function updateBootCountText() {
