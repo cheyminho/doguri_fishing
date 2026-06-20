@@ -1459,7 +1459,7 @@
     <div id="waterLine">
       <div id="waveLayer" aria-hidden="true"></div>
     </div>
-    <div id="titleGroup"><div class="title">도구리 낚시</div><div class="version">버전 0.39</div></div>
+    <div id="titleGroup"><div class="title">도구리 낚시</div><div class="version">버전 0.395</div></div>
     <div id="recordArea">
       <div id="recordPanel" aria-label="잡은 물고기 최고 기록">
         <div class="recordHeader">
@@ -2544,7 +2544,7 @@
     toastTitle.textContent = title;
     toastBody.textContent = body;
     toast.classList.add("show");
-    popupSpaceLockedUntil = performance.now() + 1000;
+    popupSpaceLockedUntil = performance.now() + 500;
   }
 
   function hidePopup() {
@@ -2562,7 +2562,7 @@
     confirmOkButton.textContent = "확인";
     confirmPopup.classList.add("show");
     confirmPopup.setAttribute("aria-hidden", "false");
-    popupSpaceLockedUntil = performance.now() + 300;
+    popupSpaceLockedUntil = performance.now() + 500;
   }
 
   function showInfoPopup(message, onConfirm = null) {
@@ -2572,7 +2572,7 @@
     confirmOkButton.textContent = "확인";
     confirmPopup.classList.add("show");
     confirmPopup.setAttribute("aria-hidden", "false");
-    popupSpaceLockedUntil = performance.now() + 300;
+    popupSpaceLockedUntil = performance.now() + 500;
   }
 
   function hideConfirmPopup() {
@@ -2850,6 +2850,18 @@
     showPopup("줄이 끊어졌다!", "반대 방향키 입력이 늦었습니다.");
   }
 
+  function breakLineByEarlySpace() {
+    clearTimers();
+    state = State.BROKEN;
+    doguriWrap.classList.remove("reeling");
+    setDoguriFishingPose(false);
+    hideFishingLine();
+    setStateText("줄이 끊어졌다!");
+    releaseDirections();
+    setGuide("다시 준비 버튼 또는 스페이스바를 누르면 준비 단계로 돌아갑니다.", true, "다시 준비");
+    showPopup("줄이 끊어졌다!", "물고기가 점프할 때 눌러 주세요.");
+  }
+
   function startJump() {
     if (state !== State.REEL) return;
     state = State.JUMP;
@@ -3012,7 +3024,7 @@
     setStateText("잡기 성공!");
     releaseDirections();
     setGuide("다시 준비 버튼 또는 스페이스바를 누르면 준비 단계로 돌아갑니다.", true, "다시 준비");
-    popupSpaceLockedUntil = performance.now() + 1300;
+    popupSpaceLockedUntil = performance.now() + 500;
 
     const rewardHatReachedBefore = isRewardHatThresholdReached();
     const size = currentFishSize || rollFishSize(currentFish);
@@ -3055,7 +3067,7 @@
     setStateText("장화 잡기");
     releaseDirections();
     setGuide("다시 준비 버튼 또는 스페이스바를 누르면 준비 단계로 돌아갑니다.", true, "다시 준비");
-    popupSpaceLockedUntil = performance.now() + 1300;
+    popupSpaceLockedUntil = performance.now() + 500;
     addBootCollectCount(1);
 
     setTimer(() => {
@@ -3337,7 +3349,7 @@
     }
   }
 
-  function handleSpace() {
+  function handleSpace(source = "button") {
     if (isConfirmPopupOpen()) return;
 
     if (isFishDexOpen()) {
@@ -3369,6 +3381,13 @@
       } else {
         addFail("입질을 놓쳤습니다.");
         if (state === State.WAIT_BITE) scheduleBite();
+      }
+      return;
+    }
+
+    if (state === State.REEL) {
+      if (source === "keyboard") {
+        breakLineByEarlySpace();
       }
       return;
     }
@@ -3534,7 +3553,7 @@
     if (e.code === "Space") {
       e.preventDefault();
       if (e.repeat) return;
-      handleSpace();
+      handleSpace("keyboard");
       return;
     }
 
