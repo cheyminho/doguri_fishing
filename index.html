@@ -1229,7 +1229,7 @@
     <div id="waterLine">
       <div id="waveLayer" aria-hidden="true"></div>
     </div>
-    <div id="titleGroup"><div class="title">도구리 낚시</div><div class="version">버전 0.32</div></div>
+    <div id="titleGroup"><div class="title">도구리 낚시</div><div class="version">버전 0.33</div></div>
     <div id="recordPanel" aria-label="잡은 물고기 최고 기록">
       <div class="recordHeader">
         <div class="recordLabel">최고 기록</div>
@@ -1771,21 +1771,24 @@
     const doguriTop = doguriRect.top - gameRect.top;
 
     // 이미지 안 낚싯대 끝 위치를 기준으로 잡은 값입니다.
-    // 세로 화면에서는 캐릭터가 상대적으로 크게 보이므로 살짝 안쪽으로 보정합니다.
-    const tipXRatio = isNarrowPortrait() ? .82 : .88;
-    const tipYRatio = isNarrowPortrait() ? .34 : .32;
-    const activeOffsetX = [State.REEL, State.JUMP, State.CAUGHT].includes(state) ? 8 : 0;
-    const activeOffsetY = [State.REEL, State.JUMP, State.CAUGHT].includes(state) ? -4 : 0;
-    const reelOffsetX = fishingLineMode === "reel" ? fishingLineReelRodTipOffset.x : 0;
-    const reelOffsetY = fishingLineMode === "reel" ? fishingLineReelRodTipOffset.y : 0;
-    const catchOffsetX = fishingLineMode === "catch" ? fishingLineCatchRodTipOffset.x : 0;
-    const catchOffsetY = fishingLineMode === "catch" ? fishingLineCatchRodTipOffset.y : 0;
-    const jumpOffsetX = fishingLineMode === "jump" ? fishingLineJumpRodTipOffset.x : 0;
-    const jumpOffsetY = fishingLineMode === "jump" ? fishingLineJumpRodTipOffset.y : 0;
+    // 가로 해상도 변화로 캐릭터 크기가 달라져도 시작점이 튀지 않도록,
+    // px 보정값은 기준 캐릭터 크기(285px)에 대한 비율로 환산해 적용합니다.
+    const doguriScale = doguriRect.width / 285;
+    const scaledOffset = (value) => value * doguriScale;
+    const tipXRatio = .88;
+    const tipYRatio = .32;
+    const activeOffsetX = [State.REEL, State.JUMP, State.CAUGHT].includes(state) ? scaledOffset(8) : 0;
+    const activeOffsetY = [State.REEL, State.JUMP, State.CAUGHT].includes(state) ? scaledOffset(-4) : 0;
+    const reelOffsetX = fishingLineMode === "reel" ? scaledOffset(fishingLineReelRodTipOffset.x) : 0;
+    const reelOffsetY = fishingLineMode === "reel" ? scaledOffset(fishingLineReelRodTipOffset.y) : 0;
+    const catchOffsetX = fishingLineMode === "catch" ? scaledOffset(fishingLineCatchRodTipOffset.x) : 0;
+    const catchOffsetY = fishingLineMode === "catch" ? scaledOffset(fishingLineCatchRodTipOffset.y) : 0;
+    const jumpOffsetX = fishingLineMode === "jump" ? scaledOffset(fishingLineJumpRodTipOffset.x) : 0;
+    const jumpOffsetY = fishingLineMode === "jump" ? scaledOffset(fishingLineJumpRodTipOffset.y) : 0;
 
     return {
-      x: doguriLeft + doguriRect.width * tipXRatio + activeOffsetX + fishingLineRodTipOffset.x + reelOffsetX + catchOffsetX + jumpOffsetX,
-      y: doguriTop + doguriRect.height * tipYRatio + activeOffsetY + fishingLineRodTipOffset.y + reelOffsetY + catchOffsetY + jumpOffsetY
+      x: doguriLeft + doguriRect.width * tipXRatio + activeOffsetX + scaledOffset(fishingLineRodTipOffset.x) + reelOffsetX + catchOffsetX + jumpOffsetX,
+      y: doguriTop + doguriRect.height * tipYRatio + activeOffsetY + scaledOffset(fishingLineRodTipOffset.y) + reelOffsetY + catchOffsetY + jumpOffsetY
     };
   }
 
