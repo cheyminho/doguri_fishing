@@ -157,7 +157,7 @@
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
-    opacity: .24;
+    opacity: .18;
     transform-origin: center;
     will-change: transform, opacity;
   }
@@ -1444,7 +1444,7 @@
     <div id="waterLine">
       <div id="waveLayer" aria-hidden="true"></div>
     </div>
-    <div id="titleGroup"><div class="title">도구리 낚시</div><div class="version">버전 0.4</div></div>
+    <div id="titleGroup"><div class="title">도구리 낚시</div><div class="version">버전 0.41</div></div>
     <div id="recordArea">
       <div id="recordPanel" aria-label="잡은 물고기 최고 기록">
         <div class="recordHeader">
@@ -3293,8 +3293,8 @@
     wave.width = randomRange(108, 156);
     wave.height = wave.width * 0.5;
     wave.scaleX = randomRange(1, 1.2);
-    wave.maxOpacity = randomRange(0.32, 0.42);
-    wave.minOpacity = randomRange(0.06, 0.10);
+    wave.maxOpacity = randomRange(0.23, 0.32);
+    wave.minOpacity = randomRange(0.015, 0.055);
     wave.opacityPhase = randomRange(0, Math.PI * 2);
     wave.opacitySpeed = randomRange(0.22, 0.38);
     wave.phase = randomRange(0, Math.PI * 2);
@@ -3349,7 +3349,7 @@
       const el = document.createElement("div");
       el.className = "wave-mark";
       waveLayer.appendChild(el);
-      const wave = { el, x: 0, top: 0, width: 132, height: 66, speed: 15, scaleX: 1, phase: 0, maxOpacity: 0.36, minOpacity: 0.08, opacityPhase: 0, opacitySpeed: 0.28, floatAmplitudeX: 4, floatAmplitudeY: 2.5, floatSpeed: 0.7 };
+      const wave = { el, x: 0, top: 0, width: 132, height: 66, speed: 15, scaleX: 1, phase: 0, maxOpacity: 0.28, minOpacity: 0.03, opacityPhase: 0, opacitySpeed: 0.28, floatAmplitudeX: 4, floatAmplitudeY: 2.5, floatSpeed: 0.7 };
       waves.push(wave);
       const initialX = -140 + spacing * i + randomRange(-spacing * 0.15, spacing * 0.15);
       resetWave(wave, false, initialX);
