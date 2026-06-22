@@ -1528,7 +1528,7 @@
     <div id="waterLine">
       <div id="waveLayer" aria-hidden="true"></div>
     </div>
-    <div id="titleGroup"><div class="title">도구리 낚시</div><div class="version">버전 0.42</div></div>
+    <div id="titleGroup"><div class="title">도구리 낚시</div><div class="version">버전 0.43</div></div>
     <div id="recordArea">
       <div id="recordPanel" aria-label="잡은 물고기 최고 기록">
         <div class="recordHeader">
@@ -3064,7 +3064,7 @@
     const jumpDuration = getJumpDurationMs();
     const splashDirection = bobberDir === 0 ? 1 : bobberDir;
     releaseDirections();
-    setGuide(`${(jumpDuration / 1000).toFixed(2)}초 안에 잡기 버튼 또는 스페이스바를 누르면 성공!`, true, "잡기!");
+    setGuide("잡기 버튼 또는 스페이스바를 누르면 성공!", true, "잡기!");
 
     cancelCaughtFishFly();
     cancelCaughtFishIdle();
