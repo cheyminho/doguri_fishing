@@ -47,7 +47,7 @@
   }
 
   #game.screen-shake {
-    animation: catchScreenShake 360ms cubic-bezier(.18, .84, .28, 1) 1;
+    animation: catchScreenShake 350ms cubic-bezier(.18, .84, .28, 1) 1;
   }
 
   @keyframes catchScreenShake {
@@ -1542,7 +1542,7 @@
     <div id="waterLine">
       <div id="waveLayer" aria-hidden="true"></div>
     </div>
-    <div id="titleGroup"><div class="title">도구리 낚시</div><div class="version">버전 0.46</div></div>
+    <div id="titleGroup"><div class="title">도구리 낚시</div><div class="version">버전 0.5</div></div>
     <div id="recordArea">
       <div id="recordPanel" aria-label="잡은 물고기 최고 기록">
         <div class="recordHeader">
@@ -1775,9 +1775,11 @@
   let bobberCastFx = null;
   let bobberCastRaf = null;
   const BOBBER_CAST_DURATION = 740;
-  const CATCH_SHAKE_DURATION_MS = 360;
-  const CATCH_SLOW_DURATION_MS = CATCH_SHAKE_DURATION_MS;
+  const CATCH_SHAKE_DURATION_MS = 350;
+  const CATCH_SLOW_DURATION_MS = 250;
   const CATCH_SLOW_END_PROGRESS = .22;
+  const CATCH_SLOW_START_SPEED_RATE = .72;
+  const CATCH_SLOW_END_SPEED_RATE = 1;
   const CATCH_FISH_FLY_DURATION_MS = 820;
 
   function getCatchFishFlyDuration(slow = false) {
@@ -2331,7 +2333,15 @@
   function easeCatchSlowProgress(elapsed, totalDuration) {
     if (elapsed <= CATCH_SLOW_DURATION_MS) {
       const slowProgress = clamp01(elapsed / CATCH_SLOW_DURATION_MS);
-      return easeOutSine(slowProgress) * CATCH_SLOW_END_PROGRESS;
+      const slowProgress2 = slowProgress * slowProgress;
+      const slowProgress3 = slowProgress2 * slowProgress;
+      const normalSlowDistance = CATCH_SLOW_DURATION_MS / CATCH_FISH_FLY_DURATION_MS;
+      const startSlope = normalSlowDistance * CATCH_SLOW_START_SPEED_RATE;
+      const endSlope = normalSlowDistance * CATCH_SLOW_END_SPEED_RATE;
+
+      return (slowProgress3 - 2 * slowProgress2 + slowProgress) * startSlope
+        + (-2 * slowProgress3 + 3 * slowProgress2) * CATCH_SLOW_END_PROGRESS
+        + (slowProgress3 - slowProgress2) * endSlope;
     }
 
     const afterSlowProgress = clamp01((elapsed - CATCH_SLOW_DURATION_MS) / (totalDuration - CATCH_SLOW_DURATION_MS));
@@ -2394,10 +2404,23 @@
 
   function getFishLinePoint() {
     const gameRect = game.getBoundingClientRect();
+
+    // 잡기 성공 직후에는 물고기를 JS로 직접 이동시키므로,
+    // getBoundingClientRect()의 회전/스케일 포함 박스 기준보다
+    // 실제 left/top 중심점을 줄 끝점으로 쓰는 편이 안정적입니다.
+    // 이렇게 하면 성공 순간 한 프레임 정도 줄 끝이 물고기에서 떨어져 보이는 현상을 줄일 수 있습니다.
+    if (fishingLineMode === "catch" && !fish.classList.contains("caught-idle")) {
+      const fishX = parseFloat(fish.style.left);
+      const fishY = parseFloat(fish.style.top);
+      if (Number.isFinite(fishX) && Number.isFinite(fishY)) {
+        return { x: fishX, y: fishY };
+      }
+    }
+
     const fishRect = fish.getBoundingClientRect();
     return {
       x: fishRect.left - gameRect.left + fishRect.width / 2,
-      y: fishRect.top - gameRect.top + fishRect.height * .45
+      y: fishRect.top - gameRect.top + fishRect.height / 2
     };
   }
 
@@ -2522,7 +2545,12 @@
       startAt: now,
       duration
     };
-    showFishingLine("catch");
+    fishingLineMode = "catch";
+    if (fishingLineRaf) {
+      cancelAnimationFrame(fishingLineRaf);
+      fishingLineRaf = null;
+    }
+    requestFishingLineFrame();
   }
 
   const FISH_TYPE_SCALES = [1.0, 1.05, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0];
@@ -3197,7 +3225,6 @@
     const fishDir = fish.classList.contains("boot-catch") ? -1 : (dx < 0 ? 1 : -1);
     const startAt = performance.now();
 
-    startCatchFishingLineFx(totalDuration);
     fish.classList.remove("jump", "caught-fly", "caught-idle");
     fish.style.left = `${startX}px`;
     fish.style.top = `${startY}px`;
@@ -3206,6 +3233,10 @@
     fish.style.zIndex = 9;
     fish.style.setProperty("--fishDir", String(fishDir));
     fish.classList.add("caught-fly");
+
+    // 물고기 위치를 먼저 고정한 뒤 낚시줄을 catch 모드로 전환해야
+    // 성공 순간 줄 끝점이 이전 점프 애니메이션 위치를 따라가며 어긋나지 않습니다.
+    startCatchFishingLineFx(totalDuration);
 
     const animate = now => {
       const elapsed = now - startAt;
