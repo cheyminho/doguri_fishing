@@ -43,6 +43,20 @@
     background: linear-gradient(180deg, #93d8f2 0%, #c2e8f2 100%);
     box-shadow: 0 18px 50px rgba(20, 73, 92, .28);
     touch-action: none;
+    transform-origin: center;
+  }
+
+  #game.screen-shake {
+    animation: catchScreenShake 360ms cubic-bezier(.18, .84, .28, 1) 1;
+  }
+
+  @keyframes catchScreenShake {
+    0%, 100% { transform: translate3d(0, 0, 0); }
+    16% { transform: translate3d(-5px, 3px, 0) rotate(-.14deg); }
+    32% { transform: translate3d(5px, -2px, 0) rotate(.12deg); }
+    50% { transform: translate3d(-4px, 2px, 0) rotate(-.10deg); }
+    68% { transform: translate3d(3px, -1px, 0) rotate(.07deg); }
+    84% { transform: translate3d(-2px, 1px, 0) rotate(-.04deg); }
   }
 
   #cloudLayer {
@@ -538,7 +552,7 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
-    z-index: 7;
+    z-index: 2;
   }
 
   .drop {
@@ -1528,7 +1542,7 @@
     <div id="waterLine">
       <div id="waveLayer" aria-hidden="true"></div>
     </div>
-    <div id="titleGroup"><div class="title">도구리 낚시</div><div class="version">버전 0.45</div></div>
+    <div id="titleGroup"><div class="title">도구리 낚시</div><div class="version">버전 0.46</div></div>
     <div id="recordArea">
       <div id="recordPanel" aria-label="잡은 물고기 최고 기록">
         <div class="recordHeader">
@@ -1761,6 +1775,15 @@
   let bobberCastFx = null;
   let bobberCastRaf = null;
   const BOBBER_CAST_DURATION = 740;
+  const CATCH_SHAKE_DURATION_MS = 360;
+  const CATCH_SLOW_DURATION_MS = CATCH_SHAKE_DURATION_MS;
+  const CATCH_SLOW_END_PROGRESS = .22;
+  const CATCH_FISH_FLY_DURATION_MS = 820;
+
+  function getCatchFishFlyDuration(slow = false) {
+    if (!slow) return CATCH_FISH_FLY_DURATION_MS;
+    return Math.round(CATCH_SLOW_DURATION_MS + (1 - CATCH_SLOW_END_PROGRESS) * CATCH_FISH_FLY_DURATION_MS);
+  }
 
 
 
@@ -2303,6 +2326,16 @@
 
   function easeOutCubic(t) {
     return 1 - Math.pow(1 - t, 3);
+  }
+
+  function easeCatchSlowProgress(elapsed, totalDuration) {
+    if (elapsed <= CATCH_SLOW_DURATION_MS) {
+      const slowProgress = clamp01(elapsed / CATCH_SLOW_DURATION_MS);
+      return easeOutSine(slowProgress) * CATCH_SLOW_END_PROGRESS;
+    }
+
+    const afterSlowProgress = clamp01((elapsed - CATCH_SLOW_DURATION_MS) / (totalDuration - CATCH_SLOW_DURATION_MS));
+    return CATCH_SLOW_END_PROGRESS + afterSlowProgress * (1 - CATCH_SLOW_END_PROGRESS);
   }
 
   function clamp01(value) {
@@ -3110,6 +3143,12 @@
   }
 
 
+  function playScreenShake() {
+    game.classList.remove("screen-shake");
+    void game.offsetWidth;
+    game.classList.add("screen-shake");
+  }
+
   function createCatchHitEffect() {
     const gameRect = game.getBoundingClientRect();
     const fishRect = fish.getBoundingClientRect();
@@ -3135,7 +3174,7 @@
     setTimeout(() => hit.remove(), 520);
   }
 
-  function flyCaughtFishToDoguri() {
+  function flyCaughtFishToDoguri({ slow = true } = {}) {
     cancelCaughtFishFly();
     cancelCaughtFishIdle();
 
@@ -3152,12 +3191,13 @@
     const initialTargetY = targetBaseY + initialDoguriOffset.y;
     const dx = initialTargetX - startX;
     const dy = initialTargetY - startY;
-    const duration = 720;
+    const duration = CATCH_FISH_FLY_DURATION_MS;
+    const totalDuration = getCatchFishFlyDuration(slow);
     const arcHeight = Math.max(95, Math.min(165, Math.abs(dx) * .26));
     const fishDir = fish.classList.contains("boot-catch") ? -1 : (dx < 0 ? 1 : -1);
     const startAt = performance.now();
 
-    startCatchFishingLineFx(duration);
+    startCatchFishingLineFx(totalDuration);
     fish.classList.remove("jump", "caught-fly", "caught-idle");
     fish.style.left = `${startX}px`;
     fish.style.top = `${startY}px`;
@@ -3168,7 +3208,9 @@
     fish.classList.add("caught-fly");
 
     const animate = now => {
-      const t = Math.min(1, (now - startAt) / duration);
+      const elapsed = now - startAt;
+      const rawProgress = Math.min(1, elapsed / totalDuration);
+      const t = slow ? easeCatchSlowProgress(elapsed, totalDuration) : rawProgress;
       const eased = easeOutSine(t);
       const arc = Math.sin(eased * Math.PI) * arcHeight;
       const doguriOffset = getDoguriIdleOffset();
@@ -3183,7 +3225,7 @@
       fish.style.opacity = 1;
       fish.style.transform = `translate(-50%, -50%) rotate(${rotate}deg) scaleX(${fishDir})`;
 
-      if (t < 1) {
+      if (elapsed < totalDuration) {
         caughtFishFlyRaf = requestAnimationFrame(animate);
       } else {
         caughtFishFlyRaf = null;
@@ -3208,9 +3250,16 @@
     setDoguriFishingPose(false);
     setDoguriCaughtPose(true);
     hideBobberUntilStart();
+
+    const caughtRarity = FISH_CATALOG.findIndex(item => item.id === currentFish?.id) + 1;
+    const isRareCatch = caughtRarity >= RARE_FISH_MIN_RARITY;
+
     createCatchHitEffect();
+    if (isRareCatch) {
+      playScreenShake();
+    }
     useFishSprite(currentFish);
-    flyCaughtFishToDoguri();
+    flyCaughtFishToDoguri({ slow: isRareCatch });
     setStateText("잡기 성공!");
     releaseDirections();
     setGuide("다시 준비 버튼 또는 스페이스바를 누르면 준비 단계로 돌아갑니다.", true, "다시 준비");
@@ -3230,11 +3279,12 @@
       pendingRewardHatUnlockPopup = true;
     }
 
+    const popupDelayMs = getCatchFishFlyDuration(isRareCatch) + 80;
     setTimer(() => {
       if (state === State.CAUGHT) {
         showPopup("잡았다!", `${caughtRecord.name} ${formatFishSize(size)}를 잡았습니다!`);
       }
-    }, 760);
+    }, popupDelayMs);
   }
 
   function catchBoot() {
@@ -3254,7 +3304,7 @@
     fish.style.translate = "";
     fish.style.zIndex = 9;
     createJumpSplash(bobberDir === 0 ? 1 : bobberDir);
-    flyCaughtFishToDoguri();
+    flyCaughtFishToDoguri({ slow: false });
     setStateText("장화 잡기");
     releaseDirections();
     setGuide("다시 준비 버튼 또는 스페이스바를 누르면 준비 단계로 돌아갑니다.", true, "다시 준비");
